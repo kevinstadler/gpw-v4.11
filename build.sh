@@ -29,7 +29,7 @@ if [ ! -f "interleaved.tif" ]; then
   gdal_merge.py -co "COMPRESS=LZW" -co "TFW=YES" -co PREDICTOR=2 -ot Byte -separate -o "interleaved.tif" "PRE0-3POST0-3.tif" "PRE4-7POST4-7.tif" "PRE8-11POST8-11.tif"
 fi
 
-for PROFILE in "geodetic mercator"; do
+for PROFILE in geodetic mercator; do
   mkdir "$PROFILE"
   cd "$PROFILE"
   if [ ! -d "png" ]; then
@@ -37,19 +37,15 @@ for PROFILE in "geodetic mercator"; do
     # https://pypi.org/project/gdal2tiles/
     python3 <<< "import gdal2tiles
 options = { 'profile': '$PROFILE', 's_srs': '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', 'tile_size': 512, 'zoom': (1, 7), 'kml': False, 'webviewer': 'none' }
-gdal2tiles.generate_tiles('interleaved.tif', 'png/', **options)"
+gdal2tiles.generate_tiles('../interleaved.tif', 'png/', **options)"
   fi
 
   cd "png"
 
-  if [ ! -d "../j" ]; then
-    echo "Creating JPG tiles"
-    mogrify -format jpg             */*/*.png && rsync -rv --include '*/' --include '*.jpg' --exclude '*' --remove-source-files . ../j
-  fi
-  if [ ! -d "../j95" ]; then
-    echo "Creating JPG 95 quality tiles"
-    mogrify -format jpg -quality 95 */*/*.png && rsync -rv --include '*/' --include '*.jpg' --exclude '*' --remove-source-files . ../j95
-  fi
+  # if [ ! -d "../j" ]; then
+  #   echo "Creating JPG 100 quality tiles"
+  #   mogrify -format jpg -quality 100 */*/*.png && rsync -rv --include '*/' --include '*.jpg' --exclude '*' --remove-source-files . ../j
+  # fi
 #  if [ ! -d "../webp" ]; then
 #    echo "Creating WebP tiles"
 #    mogrify -format webp            */*/*.png && rsync -rv --include '*/' --include '*.webp' --exclude '*' --remove-source-files . ../webp
